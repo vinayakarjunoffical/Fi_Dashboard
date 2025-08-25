@@ -96,12 +96,12 @@ const Dashboard = () => {
           </div>
 
           {/* Data Table */}
-          <div className="flex flex-col w-full h-full border border-neutral-gray/30 bg-white dark:bg-[#1F2937] p-4 gap-2 rounded-lg shadow-md">
+          {/* <div className="flex flex-col w-full h-full border border-neutral-gray/30 bg-white dark:bg-[#1F2937] p-4 gap-2 rounded-lg shadow-md">
             <span className="text-sm font-semibold text-primary">
               Today’s Tasks
             </span>
             <DataTable />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
