@@ -9,24 +9,24 @@ import DataTable from "@/components/atoms/tables/DataTable";
 
 const cardData = [
   {
-    title: "Total Revenue",
+    title: "Total FI Application",
     price: "₹1,250.00",
     percentage: 12.5,
     line1: "Trending up this month",
     line2: "Visitors for the last 6 months",
   },
   {
-    title: "Customer Churn",
+    title: "Pending Application",
     price: "₹320",
     percentage: -5.2,
-    line1: "Churn decreased this quarter",
+    line1: "Pending Application decreased this quarter",
     line2: "Compared to previous quarter",
   },
   {
-    title: "New Signups",
+    title: "New Application",
     price: "₹980",
     percentage: 8.3,
-    line1: "Signups are growing",
+    line1: "New Application are growing",
     line2: "Last 30 days",
   },
 ];
@@ -47,7 +47,7 @@ const Dashboard = () => {
           {/* Welcome Card */}
           <div className="flex flex-col w-full h-fit border border-neutral-gray/30 bg-white dark:bg-[#1F2937] p-6 gap-3 rounded-xl shadow-md">
             <span className="text-xl md:text-2xl lg:text-3xl font-semibold text-primary">
-              Welcome 👋
+              Welcome FI Dashboard 👋
             </span>
             <p className="text-sm md:text-base text-neutral-gray">
               Welcome back to Fintree LOS — your command center for smarter lending decisions. Track, manage, and accelerate your loan journey with ease.
