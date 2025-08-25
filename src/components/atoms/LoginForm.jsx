@@ -48,7 +48,7 @@ const otpLoginSchema = z.object({
 const DEMO_USERS = {
   password: {
     admin: { email: "admin@example.com", password: "password", role: "admin", redirect: "/dashboard" },
-    supervisor: { email: "supervisor@example.com", password: "password", role: "supervisor", redirect: "/olddashboard" },
+    supervisor: { email: "supervisor@example.com", password: "password", role: "supervisor", redirect: "/dashboard" },
   },
   otp: {
     admin: { mobile: "9999999999", otp: "123456", role: "admin", redirect: "/dashboard" },
