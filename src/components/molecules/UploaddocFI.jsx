@@ -1,22 +1,33 @@
+
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";   // ✅ Import router
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "../atoms/ImageUpload";
+import { Button } from "../ui/button";
 
 const documentList = {
   customer: [
     {
       category: "Identity Proof",
-      documents: ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"],
+      documents: [
+        "Aadhaar Card",
+        "PAN Card",
+        "Passport",
+        "Voter ID",
+        "Driving License",
+      ],
     },
     {
       category: "Address Proof",
-      documents: [ "Utility Bill", "Rent Agreement"],
+      documents: [
+        "Utility Bill",
+        "Rent Agreement",
+      ],
     },
   ],
   retailer: [
@@ -48,24 +59,26 @@ const documentList = {
 const UploaddocFI = ({ userId, userType, retailer }) => {
   const [uploadedDocs, setUploadedDocs] = useState({});
   const [selectedDoc, setSelectedDoc] = useState("");
-  const router = useRouter();  // ✅ Router hook
+  const [location, setLocation] = useState({ lat: "", lng: "" }); 
+  const [locationFetched, setLocationFetched] = useState(false); 
+  const router = useRouter();
 
-  const requiredDocs = documentList[userType?.toLowerCase()]?.flatMap((cat) => cat.documents) || [];
+  const requiredDocs =
+    documentList[userType?.toLowerCase()]?.flatMap((cat) => cat.documents) || [];
   const remainingDocs = requiredDocs.filter((doc) => !uploadedDocs[doc]);
 
-  // ✅ Handle upload callback
   const handleUpload = (docName) => {
     setUploadedDocs((prev) => {
       const updated = { ...prev, [docName]: true };
 
-      // ✅ check if all docs uploaded
       const allUploaded = requiredDocs.every((doc) => updated[doc]);
       if (allUploaded) {
-        toast.success(`${retailer?.personalDetails?.fullName}'s KYC has been approved ✅`);
+        toast.success(
+          `${retailer?.personalDetails?.fullName}'s KYC has been approved`
+        );
 
-        // ✅ Redirect after 1 second delay (so toast shows briefly)
         setTimeout(() => {
-          router.push("/dashboard");  
+          router.push("/dashboard");
         }, 1000);
       }
 
@@ -73,6 +86,26 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
     });
 
     setSelectedDoc("");
+  };
+
+
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLocation({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+        setLocationFetched(true);
+        toast.success("Location fetched successfully");
+      },
+      (err) => {
+        toast.error("Failed to fetch location");
+        console.error(err);
+      }
+    );
   };
 
   if (!userType || !documentList[userType.toLowerCase()]) {
@@ -93,40 +126,88 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
       {/* Left Side */}
       <div>
         <Card>
-          <CardHeader>
-            <CardTitle>User ID: {userId}</CardTitle>
-            <p className="text-sm text-gray-500">User Type: {userType}</p>
+          <CardHeader className="space-y-4">
+            <h2 className="text-2xl font-bold">User Details</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-base">
+              <p className="font-semibold">
+                Name: <span className="font-normal">Pranav Jagam</span>
+              </p>
+              <p className="font-semibold">
+                User ID: <span className="font-normal">{userId}</span>
+              </p>
+              <p className="font-semibold">
+                User Type:{" "}
+                <span className="font-normal capitalize">{userType}</span>
+              </p>
+              <p className="font-semibold">
+                Applied Date: <span className="font-normal">25 Aug 2025</span>
+              </p>
+              <p className="font-semibold">
+                Status: <span className="font-normal">FI Pending</span>
+              </p>
+            </div>
           </CardHeader>
+
           <CardContent>
-            <div className="space-y-4">
-              {/* ✅ Dropdown */}
-              <div>
-                <Label>Select Document</Label>
-                <select
-                  className="w-full border rounded-lg p-2 mt-2"
-                  value={selectedDoc}
-                  onChange={(e) => setSelectedDoc(e.target.value)}
-                  disabled={remainingDocs.length === 0}
-                >
-                  <option value="">-- Select --</option>
-                  {remainingDocs.map((doc, i) => (
-                    <option key={i} value={doc}>
-                      {doc}
-                    </option>
-                  ))}
-                </select>
+            <div className="space-y-4 mb-6">
+              <Label className="font-semibold">Fetch Current Location</Label>
+              <div >
+                <Button 
+              type="submit"
+                onClick={fetchLocation}
+                className="w-[200px] text-white py-2 px-4 rounded-lg shadow-md  transition"
+              >
+                Get Location
+              </Button>
               </div>
 
-              {/* ✅ File Upload */}
-              {selectedDoc && (
-                <div>
-                  <ImageUpload
-                    docName={selectedDoc}
-                    onUpload={() => handleUpload(selectedDoc)}
-                  />
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <input
+                  type="text"
+                  readOnly
+                  value={location.lat || "Latitude"}
+                  className="border rounded-lg py-2 px-3 bg-gray-100"
+                />
+                <input
+                  type="text"
+                  readOnly
+                  value={location.lng || "Longitude"}
+                  className="border rounded-lg py-2 px-3 bg-gray-100"
+                />
+              </div>
             </div>
+
+            {/* ✅ Only show upload section after location fetched */}
+            {locationFetched && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="font-semibold">Select Document</Label>
+                  <select
+                    className="w-full border rounded-lg py-2 px-4 mt-2"
+                    value={selectedDoc}
+                    onChange={(e) => setSelectedDoc(e.target.value)}
+                    disabled={remainingDocs.length === 0}
+                  >
+                    <option value="">-- Select --</option>
+                    {remainingDocs.map((doc, i) => (
+                      <option key={i} value={doc}>
+                        {doc}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedDoc && (
+                  <div>
+                    <ImageUpload
+                      docName={selectedDoc}
+                      onUpload={() => handleUpload(selectedDoc)}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -134,20 +215,24 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
       {/* Right Side - Checklist */}
       <div>
         <Card>
-          <CardHeader>
-            <CardTitle>Document Checklist</CardTitle>
+          <CardHeader className="!mb-0">
+            <CardTitle className="text-xl font-bold">
+              Document Checklist
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {documentList[userType.toLowerCase()].map((cat, idx) => (
-              <div key={idx} className="mb-4">
-                <h3 className="font-semibold">{cat.category}</h3>
-                <ul className="mt-2 space-y-2">
+              <div key={idx} className="mb-6">
+                <h3 className="text-lg font-semibold pb-2">{cat.category}</h3>
+                <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {cat.documents.map((doc, i) => (
                     <li
                       key={i}
-                      className="flex items-center justify-between border-b pb-2"
+                      className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg shadow-sm"
                     >
-                      <span>{doc}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {doc}
+                      </span>
                       <CheckCircle
                         className={`h-5 w-5 ${
                           uploadedDocs[doc] ? "text-green-600" : "text-gray-400"
@@ -166,6 +251,176 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
 };
 
 export default UploaddocFI;
+
+//*****************************26-08-2025  11:15********************** */
+
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";   // ✅ Import router
+// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+// import { Label } from "@/components/ui/label";
+// import { CheckCircle } from "lucide-react";
+// import { toast } from "sonner";
+// import { ImageUpload } from "../atoms/ImageUpload";
+
+// const documentList = {
+//   customer: [
+//     {
+//       category: "Identity Proof",
+//       documents: ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"],
+//     },
+//     {
+//       category: "Address Proof",
+//       documents: [ "Utility Bill", "Rent Agreement"],
+//     },
+//   ],
+//   retailer: [
+//     {
+//       category: "Business Proof",
+//       documents: [
+//         "GST Certificate",
+//         "Shop Act License",
+//         "Udyam Registration",
+//         "Business Registration Certificate",
+//       ],
+//     },
+//     {
+//       category: "Address Proof",
+//       documents: [
+//         "Shop Act License",
+//         "Electricity Bill",
+//         "Rental Agreement",
+//         "Property Tax Receipt",
+//       ],
+//     },
+//     {
+//       category: "Other Supporting",
+//       documents: ["Owner Photo", "Cancelled Cheque", "Shop / Office Photographs"],
+//     },
+//   ],
+// };
+
+// const UploaddocFI = ({ userId, userType, retailer }) => {
+//   const [uploadedDocs, setUploadedDocs] = useState({});
+//   const [selectedDoc, setSelectedDoc] = useState("");
+//   const router = useRouter();  
+
+//   const requiredDocs = documentList[userType?.toLowerCase()]?.flatMap((cat) => cat.documents) || [];
+//   const remainingDocs = requiredDocs.filter((doc) => !uploadedDocs[doc]);
+
+//   const handleUpload = (docName) => {
+//     setUploadedDocs((prev) => {
+//       const updated = { ...prev, [docName]: true };
+
+      
+//       const allUploaded = requiredDocs.every((doc) => updated[doc]);
+//       if (allUploaded) {
+//         toast.success(`${retailer?.personalDetails?.fullName}'s KYC has been approved ✅`);
+
+    
+//         setTimeout(() => {
+//           router.push("/dashboard");  
+//         }, 1000);
+//       }
+
+//       return updated;
+//     });
+
+//     setSelectedDoc("");
+//   };
+
+//   if (!userType || !documentList[userType.toLowerCase()]) {
+//     return (
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Invalid or missing user type</CardTitle>
+//         </CardHeader>
+//         <CardContent>
+//           <p>No document list available. Please check the URL.</p>
+//         </CardContent>
+//       </Card>
+//     );
+//   }
+
+//   return (
+//     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
+//       {/* Left Side */}
+//       <div>
+//         <Card>
+//           <CardHeader>
+//             <CardTitle>User ID: {userId}</CardTitle>
+//             <p className="text-sm text-gray-500">User Type: {userType}</p>
+//           </CardHeader>
+//           <CardContent>
+//             <div className="space-y-4">
+//               {/* ✅ Dropdown */}
+//               <div>
+//                 <Label>Select Document</Label>
+//                 <select
+//                   className="w-full border rounded-lg p-2 mt-2"
+//                   value={selectedDoc}
+//                   onChange={(e) => setSelectedDoc(e.target.value)}
+//                   disabled={remainingDocs.length === 0}
+//                 >
+//                   <option value="">-- Select --</option>
+//                   {remainingDocs.map((doc, i) => (
+//                     <option key={i} value={doc}>
+//                       {doc}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </div>
+
+//               {/* ✅ File Upload */}
+//               {selectedDoc && (
+//                 <div>
+//                   <ImageUpload
+//                     docName={selectedDoc}
+//                     onUpload={() => handleUpload(selectedDoc)}
+//                   />
+//                 </div>
+//               )}
+//             </div>
+//           </CardContent>
+//         </Card>
+//       </div>
+
+//       {/* Right Side - Checklist */}
+//       <div>
+//         <Card>
+//           <CardHeader>
+//             <CardTitle>Document Checklist</CardTitle>
+//           </CardHeader>
+//           <CardContent>
+//             {documentList[userType.toLowerCase()].map((cat, idx) => (
+//               <div key={idx} className="mb-4">
+//                 <h3 className="font-semibold">{cat.category}</h3>
+//                 <ul className="mt-2 space-y-2">
+//                   {cat.documents.map((doc, i) => (
+//                     <li
+//                       key={i}
+//                       className="flex items-center justify-between border-b pb-2"
+//                     >
+//                       <span>{doc}</span>
+//                       <CheckCircle
+//                         className={`h-5 w-5 ${
+//                           uploadedDocs[doc] ? "text-green-600" : "text-gray-400"
+//                         }`}
+//                       />
+//                     </li>
+//                   ))}
+//                 </ul>
+//               </div>
+//             ))}
+//           </CardContent>
+//         </Card>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default UploaddocFI;
 
 
 
