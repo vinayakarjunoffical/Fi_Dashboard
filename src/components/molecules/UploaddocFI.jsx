@@ -138,9 +138,9 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
             <h2 className="text-2xl font-bold">User Details</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-base">
-              <p className="font-semibold">
+              {/* <p className="font-semibold">
                 Name: <span className="font-normal">Pranav Jagam</span>
-              </p>
+              </p> */}
               <p className="font-semibold">
                 User ID: <span className="font-normal">{userId}</span>
               </p>

@@ -34,12 +34,12 @@ const FeildInv = ({ data }) => {
       </Badge>
     ),
   },
-  {
-    key: "fiDetails",
-    label: "Verification Status",
-    align: "center",
-    render: (item) => item.fiDetails?.verificationStatus || "-",
-  },
+  // {
+  //   key: "fiDetails",
+  //   label: "Verification Status",
+  //   align: "center",
+  //   render: (item) => item.fiDetails?.verificationStatus || "-",
+  // },
   {
     key: "fiDetails",
     label: "Investigator",
