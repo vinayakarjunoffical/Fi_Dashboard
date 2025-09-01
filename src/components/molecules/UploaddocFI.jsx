@@ -163,7 +163,9 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
               <Button 
               type="submit"
                 onClick={fetchLocation}
-                className="w-[200px] text-white py-2 px-4 rounded-lg shadow-md  transition"
+                className="w-[200px] py-2 px-4 rounded-lg shadow-md transition
+             bg-blue-600 text-white hover:bg-blue-700 
+             dark:bg-blue-500 dark:hover:bg-blue-600"
               >
                 Get Location
               </Button>
@@ -173,13 +175,17 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
                   type="text"
                   readOnly
                   value={location.lat || "Latitude"}
-                  className="border rounded-lg py-2 px-3 bg-gray-100"
+                  className="border rounded-lg py-2 px-3 mt-1
+             bg-gray-100 dark:bg-gray-800 
+             text-gray-900 dark:text-gray-200"
                 />
                 <input
                   type="text"
                   readOnly
                   value={location.lng || "Longitude"}
-                  className="border rounded-lg py-2 px-3 bg-gray-100"
+                  className="w-full border rounded-lg py-2 px-4 mt-1
+             bg-white dark:bg-gray-800 
+             text-gray-900 dark:text-gray-200"
                 />
               </div>
             </div>
@@ -233,9 +239,12 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
                   <li
                     key={i}
                     onClick={() => handleDocClick(doc)}
-                    className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition"
+                    className="flex items-center justify-between 
+             bg-gray-50 dark:bg-gray-800 
+             px-3 py-2 rounded-lg shadow-sm cursor-pointer 
+             transition"
                   >
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-white">
                       {doc}
                     </span>
                     <CheckCircle

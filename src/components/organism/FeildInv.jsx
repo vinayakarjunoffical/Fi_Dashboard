@@ -9,8 +9,8 @@ const FeildInv = ({ data }) => {
   { key: "applicationId", label: "Application ID", sortable: true, align: "center" },
   { key: "userName", label: "User Name", sortable: true, align: "left" },
   { key: "address", label: "Address", align: "left" },
-  { key: "mobileNo", label: "Mobile No", align: "center" },
-  { key: "email", label: "Email", align: "left" },
+  // { key: "mobileNo", label: "Mobile No", align: "center" },
+  // { key: "email", label: "Email", align: "left" },
   { key: "applicationDate", label: "Date", sortable: true, align: "center" },
  {
     key: "userType",
@@ -58,12 +58,12 @@ const FeildInv = ({ data }) => {
     align: "center",
     render: (item) => item.fiDetails?.visitDate || "-",
   },
-  {
-    key: "fiDetails",
-    label: "Remarks",
-    align: "left",
-    render: (item) => item.fiDetails?.remarks || "-",
-  },
+  // {
+  //   key: "fiDetails",
+  //   label: "Remarks",
+  //   align: "left",
+  //   render: (item) => item.fiDetails?.remarks || "-",
+  // },
 ];
 
   return (
