@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -12,24 +11,16 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// ✅ Document list
 const documentList = {
   customer: [
     {
       category: "Identity Proof",
-      documents: [
-        "Aadhaar Card",
-        "PAN Card",
-        "Passport",
-        "Voter ID",
-        "Driving License",
-      ],
+      documents: ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"],
     },
     {
       category: "Address Proof",
-      documents: [
-        "Utility Bill",
-        "Rent Agreement",
-      ],
+      documents: ["Utility Bill", "Rent Agreement"],
     },
   ],
   retailer: [
@@ -44,12 +35,7 @@ const documentList = {
     },
     {
       category: "Address Proof",
-      documents: [
-        "Shop Act License",
-        "Electricity Bill",
-        "Rental Agreement",
-        "Property Tax Receipt",
-      ],
+      documents: ["Shop Act License", "Electricity Bill", "Rental Agreement", "Property Tax Receipt"],
     },
     {
       category: "Other Supporting",
@@ -58,36 +44,42 @@ const documentList = {
   ],
 };
 
+// ✅ Questionnaire data (can be replaced with API/JSON)
+const questionsData = [
+  { id: 1, question: "Is the shop physically verified?", required: true },
+ 
+];
+
 const UploaddocFI = ({ userId, userType, retailer }) => {
   const [uploadedDocs, setUploadedDocs] = useState({});
   const [selectedDoc, setSelectedDoc] = useState("");
-  const [location, setLocation] = useState({ lat: "", lng: "" }); 
-  const [locationFetched, setLocationFetched] = useState(false); 
-  const router = useRouter();
+  const [location, setLocation] = useState({ lat: "", lng: "" });
+  const [locationFetched, setLocationFetched] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const router = useRouter();
 
+  // ✅ Handle doc click
   const handleDocClick = (doc) => {
     setSelectedDoc(doc);
     setOpen(true);
   };
 
+  // ✅ Required docs
   const requiredDocs =
     documentList[userType?.toLowerCase()]?.flatMap((cat) => cat.documents) || [];
   const remainingDocs = requiredDocs.filter((doc) => !uploadedDocs[doc]);
 
+  // ✅ Handle document upload
   const handleUpload = (docName) => {
     setUploadedDocs((prev) => {
       const updated = { ...prev, [docName]: true };
 
       const allUploaded = requiredDocs.every((doc) => updated[doc]);
       if (allUploaded) {
-        toast.success(
-          `${retailer?.personalDetails?.fullName}'s KYC has been approved`
-        );
-
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
+        toast.success("All documents uploaded. Please answer the questions.");
+        setShowQuestions(true); // 👈 show questionnaire
       }
 
       return updated;
@@ -96,7 +88,7 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
     setSelectedDoc("");
   };
 
-
+  // ✅ Fetch location
   const fetchLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by this browser.");
@@ -118,7 +110,7 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
 
   if (!userType || !documentList[userType.toLowerCase()]) {
     return (
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <CardHeader>
           <CardTitle>Invalid or missing user type</CardTitle>
         </CardHeader>
@@ -133,7 +125,7 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Left Side */}
       <div>
-        <Card>
+        <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
           <CardHeader className="space-y-4">
             <h2 className="text-2xl font-bold">User Details</h2>
 
@@ -158,14 +150,13 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
           </CardHeader>
 
           <CardContent>
+            {/* Location */}
             <div className="space-y-4 mb-6">
               <Label className="font-semibold">Fetch Current Location</Label>
-              <Button 
-              type="submit"
+              <Button
+                type="submit"
                 onClick={fetchLocation}
-                className="w-[200px] py-2 px-4 rounded-lg shadow-md transition
-             bg-blue-600 text-white hover:bg-blue-700 
-             dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="w-[200px] text-white py-2 px-4 dark:bg-gray-800 rounded-lg shadow-md transition"
               >
                 Get Location
               </Button>
@@ -175,28 +166,33 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
                   type="text"
                   readOnly
                   value={location.lat || "Latitude"}
-                  className="border rounded-lg py-2 px-3 mt-1
-             bg-gray-100 dark:bg-gray-800 
-             text-gray-900 dark:text-gray-200"
+                  className="border rounded-lg py-2 px-3 
+                  bg-gray-100 dark:bg-gray-800 
+                  text-gray-800 dark:text-gray-200 
+                  border-gray-300 dark:border-gray-700"
                 />
                 <input
                   type="text"
                   readOnly
                   value={location.lng || "Longitude"}
-                  className="w-full border rounded-lg py-2 px-4 mt-1
-             bg-white dark:bg-gray-800 
-             text-gray-900 dark:text-gray-200"
+                  className="border rounded-lg py-2 px-3 
+                  bg-gray-100 dark:bg-gray-800 
+                  text-gray-800 dark:text-gray-200 
+                  border-gray-300 dark:border-gray-700"
                 />
               </div>
             </div>
 
-          
+            {/* Document Upload */}
             {locationFetched && (
               <div className="space-y-4">
                 <div>
                   <Label className="font-semibold">Select Document</Label>
                   <select
-                    className="w-full border rounded-lg py-2 px-4 mt-2"
+                    className="w-full border rounded-lg py-2 px-4 mt-2 
+                    bg-white dark:bg-gray-800 
+                    text-gray-800 dark:text-gray-200 
+                    border-gray-300 dark:border-gray-700"
                     value={selectedDoc}
                     onChange={(e) => setSelectedDoc(e.target.value)}
                     disabled={remainingDocs.length === 0}
@@ -220,67 +216,416 @@ const UploaddocFI = ({ userId, userType, retailer }) => {
                 )}
               </div>
             )}
+
+            {/* ✅ Questionnaire BELOW Upload */}
+            {showQuestions && (
+              <div className="mt-6 space-y-4">
+                <h3 className="text-lg font-bold">FI Verification Questions</h3>
+                {questionsData.map((q) => (
+                  <div key={q.id} className="space-y-2">
+                    <Label className="font-semibold">
+                      {q.question}
+                      {q.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg py-2 px-3 
+                        bg-gray-100 dark:bg-gray-800 
+                        text-gray-800 dark:text-gray-200 
+                        border-gray-300 dark:border-gray-700"
+                      value={answers[q.id] || ""}
+                      onChange={(e) =>
+                        setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))
+                      }
+                      required={q.required}
+                    />
+                  </div>
+                ))}
+
+                <Button
+                  className="lg:w-[250px] w-full mt-4"
+                  onClick={() => {
+                    const missing = questionsData.filter(
+                      (q) => q.required && !answers[q.id]
+                    );
+                    if (missing.length > 0) {
+                      toast.error("Please fill all required questions");
+                      return;
+                    }
+                    toast.success(
+                      `${retailer?.personalDetails?.fullName}'s KYC has been approved`
+                    );
+                    setTimeout(() => router.push("/dashboard"), 1200);
+                  }}
+                >
+                  Submit Answers
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       {/* Right Side - Checklist */}
       <div>
-      <Card>
-        <CardHeader className="!mb-0">
-          <CardTitle className="text-xl font-bold">Document Checklist</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {documentList[userType.toLowerCase()].map((cat, idx) => (
-            <div key={idx} className="mb-6">
-              <h3 className="text-lg font-semibold pb-2">{cat.category}</h3>
-              <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {cat.documents.map((doc, i) => (
-                  <li
-                    key={i}
-                    onClick={() => handleDocClick(doc)}
-                    className="flex items-center justify-between 
-             bg-gray-50 dark:bg-gray-800 
-             px-3 py-2 rounded-lg shadow-sm cursor-pointer 
-             transition"
-                  >
-                    <span className="text-sm font-medium text-gray-700 dark:text-white">
-                      {doc}
-                    </span>
-                    <CheckCircle
-                      className={`h-5 w-5 ${
-                        uploadedDocs[doc] ? "text-green-600" : "text-gray-400"
-                      }`}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+       <Card className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <CardHeader className="!mb-0">
+      <CardTitle className="text-xl font-bold">Document Checklist</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {documentList[userType.toLowerCase()].map((cat, idx) => (
+        <div key={idx} className="mb-6">
+          <h3 className="text-lg font-semibold pb-2">{cat.category}</h3>
+          <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {cat.documents.map((doc, i) => (
+              <li
+                key={i}
+                className="flex items-center justify-between 
+                  bg-gray-50 dark:bg-gray-800 
+                  px-3 py-2 rounded-lg shadow-sm 
+                  hover:bg-gray-100 dark:hover:bg-gray-700 
+                  transition"
+              >
+                <span
+                  onClick={() => handleDocClick(doc)}
+                  className="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer"
+                >
+                  {doc}
+                </span>
 
-      {/* Popup (Dialog) */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedDoc}</DialogTitle>
-          </DialogHeader>
-          {/* Skeleton inside popup */}
-          <div className="space-y-3 mt-4">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-40 w-full rounded-lg" />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+                <div className="flex items-center gap-2">
+                  {/* ✅ Old Doc Button */}
+                  <Button
+                    onClick={() => {
+                      setSelectedDoc(doc);
+                      setOpen(true);
+                    }}
+                    className="px-2 py-1 text-xs !h-7 rounded-md border-1 "
+                    variant="ghost"
+                  >
+                    Old Doc
+                  </Button>
+
+                  <CheckCircle
+                    className={`h-5 w-5 ${
+                      uploadedDocs[doc]
+                        ? "text-green-600"
+                        : "text-gray-400 dark:text-gray-500"
+                    }`}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+
+        {/* Popup (Dialog) */}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <DialogHeader>
+              <DialogTitle>{selectedDoc}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 mt-4">
+              <Skeleton className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-4 w-full bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-40 w-full rounded-lg bg-gray-200 dark:bg-gray-700" />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 };
 
 export default UploaddocFI;
+//***************************2-9-25 6:51*********************************** */
+
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+// import { Label } from "@/components/ui/label";
+// import { CheckCircle } from "lucide-react";
+// import { toast } from "sonner";
+// import { ImageUpload } from "../atoms/ImageUpload";
+// import { Button } from "../ui/button";
+// import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+// import { Skeleton } from "@/components/ui/skeleton";
+
+// const documentList = {
+//   customer: [
+//     {
+//       category: "Identity Proof",
+//       documents: [
+//         "Aadhaar Card",
+//         "PAN Card",
+//         "Passport",
+//         "Voter ID",
+//         "Driving License",
+//       ],
+//     },
+//     {
+//       category: "Address Proof",
+//       documents: [
+//         "Utility Bill",
+//         "Rent Agreement",
+//       ],
+//     },
+//   ],
+//   retailer: [
+//     {
+//       category: "Business Proof",
+//       documents: [
+//         "GST Certificate",
+//         "Shop Act License",
+//         "Udyam Registration",
+//         "Business Registration Certificate",
+//       ],
+//     },
+//     {
+//       category: "Address Proof",
+//       documents: [
+//         "Shop Act License",
+//         "Electricity Bill",
+//         "Rental Agreement",
+//         "Property Tax Receipt",
+//       ],
+//     },
+//     {
+//       category: "Other Supporting",
+//       documents: ["Owner Photo", "Cancelled Cheque", "Shop / Office Photographs"],
+//     },
+//   ],
+// };
+
+// const UploaddocFI = ({ userId, userType, retailer }) => {
+//   const [uploadedDocs, setUploadedDocs] = useState({});
+//   const [selectedDoc, setSelectedDoc] = useState("");
+//   const [location, setLocation] = useState({ lat: "", lng: "" }); 
+//   const [locationFetched, setLocationFetched] = useState(false); 
+//   const router = useRouter();
+//   const [open, setOpen] = useState(false);
+
+//   const handleDocClick = (doc) => {
+//     setSelectedDoc(doc);
+//     setOpen(true);
+//   };
+
+//   const requiredDocs =
+//     documentList[userType?.toLowerCase()]?.flatMap((cat) => cat.documents) || [];
+//   const remainingDocs = requiredDocs.filter((doc) => !uploadedDocs[doc]);
+
+//   const handleUpload = (docName) => {
+//     setUploadedDocs((prev) => {
+//       const updated = { ...prev, [docName]: true };
+
+//       const allUploaded = requiredDocs.every((doc) => updated[doc]);
+//       if (allUploaded) {
+//         toast.success(
+//           `${retailer?.personalDetails?.fullName}'s KYC has been approved`
+//         );
+
+//         setTimeout(() => {
+//           router.push("/dashboard");
+//         }, 1000);
+//       }
+
+//       return updated;
+//     });
+
+//     setSelectedDoc("");
+//   };
+
+
+//   const fetchLocation = () => {
+//     if (!navigator.geolocation) {
+//       toast.error("Geolocation is not supported by this browser.");
+//       return;
+//     }
+//     navigator.geolocation.getCurrentPosition(
+//       (pos) => {
+//         const { latitude, longitude } = pos.coords;
+//         setLocation({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+//         setLocationFetched(true);
+//         toast.success("Location fetched successfully");
+//       },
+//       (err) => {
+//         toast.error("Failed to fetch location");
+//         console.error(err);
+//       }
+//     );
+//   };
+
+//   if (!userType || !documentList[userType.toLowerCase()]) {
+//     return (
+//       <Card>
+//         <CardHeader>
+//           <CardTitle>Invalid or missing user type</CardTitle>
+//         </CardHeader>
+//         <CardContent>
+//           <p>No document list available. Please check the URL.</p>
+//         </CardContent>
+//       </Card>
+//     );
+//   }
+
+//   return (
+//     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
+//       {/* Left Side */}
+//       <div>
+//         <Card>
+//           <CardHeader className="space-y-4">
+//             <h2 className="text-2xl font-bold">User Details</h2>
+
+//             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-base">
+//               {/* <p className="font-semibold">
+//                 Name: <span className="font-normal">Pranav Jagam</span>
+//               </p> */}
+//               <p className="font-semibold">
+//                 User ID: <span className="font-normal">{userId}</span>
+//               </p>
+//               <p className="font-semibold">
+//                 User Type:{" "}
+//                 <span className="font-normal capitalize">{userType}</span>
+//               </p>
+//               <p className="font-semibold">
+//                 Applied Date: <span className="font-normal">25 Aug 2025</span>
+//               </p>
+//               <p className="font-semibold">
+//                 Status: <span className="font-normal">FI Pending</span>
+//               </p>
+//             </div>
+//           </CardHeader>
+
+//           <CardContent>
+//             <div className="space-y-4 mb-6">
+//               <Label className="font-semibold">Fetch Current Location</Label>
+//               <Button 
+//               type="submit"
+//                 onClick={fetchLocation}
+//                 className="w-[200px] py-2 px-4 rounded-lg shadow-md transition
+//              bg-blue-600 text-white hover:bg-blue-700 
+//              dark:bg-blue-500 dark:hover:bg-blue-600"
+//               >
+//                 Get Location
+//               </Button>
+
+//               <div className="grid grid-cols-2 gap-4 mt-3">
+//                 <input
+//                   type="text"
+//                   readOnly
+//                   value={location.lat || "Latitude"}
+//                   className="border rounded-lg py-2 px-3 mt-1
+//              bg-gray-100 dark:bg-gray-800 
+//              text-gray-900 dark:text-gray-200"
+//                 />
+//                 <input
+//                   type="text"
+//                   readOnly
+//                   value={location.lng || "Longitude"}
+//                   className="w-full border rounded-lg py-2 px-4 mt-1
+//              bg-white dark:bg-gray-800 
+//              text-gray-900 dark:text-gray-200"
+//                 />
+//               </div>
+//             </div>
+
+          
+//             {locationFetched && (
+//               <div className="space-y-4">
+//                 <div>
+//                   <Label className="font-semibold">Select Document</Label>
+//                   <select
+//                     className="w-full border rounded-lg py-2 px-4 mt-2"
+//                     value={selectedDoc}
+//                     onChange={(e) => setSelectedDoc(e.target.value)}
+//                     disabled={remainingDocs.length === 0}
+//                   >
+//                     <option value="">-- Select --</option>
+//                     {remainingDocs.map((doc, i) => (
+//                       <option key={i} value={doc}>
+//                         {doc}
+//                       </option>
+//                     ))}
+//                   </select>
+//                 </div>
+
+//                 {selectedDoc && (
+//                   <div>
+//                     <ImageUpload
+//                       docName={selectedDoc}
+//                       onUpload={() => handleUpload(selectedDoc)}
+//                     />
+//                   </div>
+//                 )}
+//               </div>
+//             )}
+//           </CardContent>
+//         </Card>
+//       </div>
+
+//       {/* Right Side - Checklist */}
+//       <div>
+//       <Card>
+//         <CardHeader className="!mb-0">
+//           <CardTitle className="text-xl font-bold">Document Checklist</CardTitle>
+//         </CardHeader>
+//         <CardContent>
+//           {documentList[userType.toLowerCase()].map((cat, idx) => (
+//             <div key={idx} className="mb-6">
+//               <h3 className="text-lg font-semibold pb-2">{cat.category}</h3>
+//               <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                 {cat.documents.map((doc, i) => (
+//                   <li
+//                     key={i}
+//                     onClick={() => handleDocClick(doc)}
+//                     className="flex items-center justify-between 
+//              bg-gray-50 dark:bg-gray-800 
+//              px-3 py-2 rounded-lg shadow-sm cursor-pointer 
+//              transition"
+//                   >
+//                     <span className="text-sm font-medium text-gray-700 dark:text-white">
+//                       {doc}
+//                     </span>
+//                     <CheckCircle
+//                       className={`h-5 w-5 ${
+//                         uploadedDocs[doc] ? "text-green-600" : "text-gray-400"
+//                       }`}
+//                     />
+//                   </li>
+//                 ))}
+//               </ul>
+//             </div>
+//           ))}
+//         </CardContent>
+//       </Card>
+
+//       {/* Popup (Dialog) */}
+//       <Dialog open={open} onOpenChange={setOpen}>
+//         <DialogContent className="sm:max-w-md">
+//           <DialogHeader>
+//             <DialogTitle>{selectedDoc}</DialogTitle>
+//           </DialogHeader>
+//           {/* Skeleton inside popup */}
+//           <div className="space-y-3 mt-4">
+//             <Skeleton className="h-6 w-3/4" />
+//             <Skeleton className="h-4 w-full" />
+//             <Skeleton className="h-4 w-5/6" />
+//             <Skeleton className="h-40 w-full rounded-lg" />
+//           </div>
+//         </DialogContent>
+//       </Dialog>
+//     </div>
+//     </div>
+//   );
+// };
+
+// export default UploaddocFI;
 
 //**************************01-09-25 1:48 *********************** */
 // "use client";
